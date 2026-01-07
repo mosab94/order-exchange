@@ -8,6 +8,8 @@ use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
+    // use WithoutModelEvents;
+
     /**
      * Seed the application's database.
      */
@@ -15,9 +17,15 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // User::factory()->create([
+        //     'name' => 'Test User',
+        //     'email' => 'test@example.com',
+        // ]);
+
+        $this->call([
+            SideSeeder::class,
+            StatusSeeder::class,
+            SymbolSeeder::class,
         ]);
     }
 }
