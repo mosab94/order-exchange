@@ -5,12 +5,15 @@ namespace App\Models;
 use App\Enums\Side as SideEnum;
 use App\Enums\Status as StatusEnum;
 use App\Enums\Symbol as SymbolEnum;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'user_id',
         'symbol_id',

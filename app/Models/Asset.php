@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use App\Enums\Symbol as SymbolEnum;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Asset extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'user_id',
         'symbol_id',
