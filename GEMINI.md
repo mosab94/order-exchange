@@ -20,6 +20,7 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - pestphp/pest (PEST) - v4
 - phpunit/phpunit (PHPUNIT) - v12
 - @inertiajs/vue3 (INERTIA) - v2
+- laravel-echo (ECHO) - v2
 - tailwindcss (TAILWINDCSS) - v4
 - vue (VUE) - v3
 - @laravel/vite-plugin-wayfinder (WAYFINDER) - v0

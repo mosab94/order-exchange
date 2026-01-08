@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Enums\Side;
 use App\Enums\Status;
 use App\Enums\Symbol as SymbolEnum;
+use App\Events\OrderbookUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\Asset;
 use App\Models\Order;
@@ -13,11 +14,25 @@ use App\Services\MatchingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 
 class OrderController extends Controller
 {
     public function __construct(protected MatchingService $matchingService) {}
+
+    /**
+     * Returns authenticated user's orders.
+     */
+    public function history(Request $request): JsonResponse
+    {
+        $orders = Order::where('user_id', $request->user()->id)
+            ->with(['symbol', 'status', 'side'])
+            ->latest()
+            ->get();
+
+        return response()->json($orders);
+    }
 
     /**
      * Returns all open orders for orderbook (buy & sell).
@@ -49,15 +64,15 @@ class OrderController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'symbol' => ['required', new Enum(SymbolEnum::class)],
-            'side' => ['required', new Enum(Side::class)],
+            'symbol' => ['required', 'string', Rule::in(array_column(SymbolEnum::cases(), 'name'))],
+            'side' => ['required', 'string', Rule::in(array_column(Side::cases(), 'name'))],
             'price' => 'required|numeric|gt:0',
             'amount' => 'required|numeric|gt:0',
         ]);
 
         $user = $request->user();
-        $symbolEnum = SymbolEnum::from($validated['symbol']);
-        $side = Side::from($validated['side']);
+        $symbolEnum = constant(SymbolEnum::class . '::' . $validated['symbol']);
+        $side = constant(Side::class . '::' . $validated['side']);
         $price = $validated['price'];
         $amount = $validated['amount'];
         $commissionRate = 0.015;
@@ -99,6 +114,8 @@ class OrderController extends Controller
                 'status_id' => Status::Open->value,
             ]);
 
+            OrderbookUpdated::dispatch($symbolEnum);
+
             $this->matchingService->match($order);
 
             return response()->json($order->fresh(), 201);
@@ -133,6 +150,8 @@ class OrderController extends Controller
                 $asset->decrement('locked_amount', $order->amount);
                 $asset->increment('amount', $order->amount);
             }
+
+            OrderbookUpdated::dispatch($order->symbol_id);
         });
 
         return response()->json(['message' => 'Order cancelled']);

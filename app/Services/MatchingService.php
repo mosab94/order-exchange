@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\Side;
 use App\Enums\Status;
+use App\Events\OrderbookUpdated;
 use App\Models\Asset;
 use App\Models\Order;
 use App\Models\Trade;
@@ -63,7 +64,7 @@ class MatchingService
             $match->update(['status_id' => Status::Filled->value]);
 
             // Create Trade record
-            Trade::create([
+            $trade = Trade::create([
                 'buyer_order_id' => $buyOrder->id,
                 'seller_order_id' => $sellOrder->id,
                 'price' => $price,
@@ -100,6 +101,9 @@ class MatchingService
             if ($refund > 0) {
                 $buyOrder->user->increment('balance', $refund);
             }
+
+            \App\Events\OrderMatched::dispatch($trade, $buyOrder, $sellOrder);
+            OrderbookUpdated::dispatch($buyOrder->symbol_id);
         });
     }
 }

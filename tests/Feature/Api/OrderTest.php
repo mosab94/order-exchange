@@ -18,6 +18,7 @@ beforeEach(function () {
     $this->seed(SideSeeder::class);
     $this->seed(StatusSeeder::class);
     $this->seed(SymbolSeeder::class);
+    $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class);
 });
 
 test('authenticated user can view profile', function () {
@@ -49,8 +50,8 @@ test('user can place a buy order', function () {
     $user = User::factory()->create(['balance' => 100000]);
 
     $response = $this->actingAs($user)->postJson('/api/orders', [
-        'symbol' => SymbolEnum::BTC->value,
-        'side' => Side::Buy->value,
+        'symbol' => SymbolEnum::BTC->name,
+        'side' => Side::Buy->name,
         'price' => 95000,
         'amount' => 0.01,
     ]);
@@ -81,8 +82,8 @@ test('user can place a sell order', function () {
     ]);
 
     $response = $this->actingAs($user)->postJson('/api/orders', [
-        'symbol' => SymbolEnum::BTC->value,
-        'side' => Side::Sell->value,
+        'symbol' => SymbolEnum::BTC->name,
+        'side' => Side::Sell->name,
         'price' => 96000,
         'amount' => 0.1,
     ]);
@@ -108,16 +109,16 @@ test('orders can match', function () {
     ]);
 
     $this->actingAs($seller)->postJson('/api/orders', [
-        'symbol' => SymbolEnum::BTC->value,
-        'side' => Side::Sell->value,
+        'symbol' => SymbolEnum::BTC->name,
+        'side' => Side::Sell->name,
         'price' => 95000,
         'amount' => 0.01,
     ]);
 
     // Buyer places buy order that matches
     $response = $this->actingAs($buyer)->postJson('/api/orders', [
-        'symbol' => SymbolEnum::BTC->value,
-        'side' => Side::Buy->value,
+        'symbol' => SymbolEnum::BTC->name,
+        'side' => Side::Buy->name,
         'price' => 95000,
         'amount' => 0.01,
     ]);
@@ -165,8 +166,8 @@ test('buyer gets refund if matched at better price', function () {
         'locked_amount' => 0.0,
     ]);
     $this->actingAs($seller)->postJson('/api/orders', [
-        'symbol' => SymbolEnum::BTC->value,
-        'side' => Side::Sell->value,
+        'symbol' => SymbolEnum::BTC->name,
+        'side' => Side::Sell->name,
         'price' => 90000,
         'amount' => 0.01,
     ]);
@@ -179,8 +180,8 @@ test('buyer gets refund if matched at better price', function () {
     // Final balance: 100000 - 913.5 = 99086.5
 
     $this->actingAs($buyer)->postJson('/api/orders', [
-        'symbol' => SymbolEnum::BTC->value,
-        'side' => Side::Buy->value,
+        'symbol' => SymbolEnum::BTC->name,
+        'side' => Side::Buy->name,
         'price' => 95000,
         'amount' => 0.01,
     ]);
@@ -191,18 +192,19 @@ test('buyer gets refund if matched at better price', function () {
 test('user can cancel an open order', function () {
     $user = User::factory()->create(['balance' => 100000]);
 
-    $this->actingAs($user)->postJson('/api/orders', [
-        'symbol' => SymbolEnum::BTC->value,
-        'side' => Side::Buy->value,
+    $response = $this->actingAs($user)->postJson('/api/orders', [
+        'symbol' => SymbolEnum::BTC->name,
+        'side' => Side::Buy->name,
         'price' => 95000,
         'amount' => 0.01,
     ]);
 
-    $response = $this->actingAs($user)->postJson('/api/orders/1/cancel');
+    $orderId = $response->json('id');
+    $response = $this->actingAs($user)->postJson("/api/orders/{$orderId}/cancel");
 
     $response->assertStatus(200);
     $this->assertEquals(100000, $user->fresh()->balance);
-    $this->assertDatabaseHas('orders', ['id' => 1, 'status_id' => Status::Cancelled->value]);
+    $this->assertDatabaseHas('orders', ['id' => $orderId, 'status_id' => Status::Cancelled->value]);
 });
 
 test('user can view open orders for a symbol', function () {

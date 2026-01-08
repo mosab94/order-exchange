@@ -18,6 +18,7 @@ Route::get('dashboard', function () {
 
 Route::middleware('auth')->prefix('api')->group(function () {
     Route::get('/profile', [ProfileController::class, 'show']);
+    Route::get('/orders/history', [OrderController::class, 'history']);
     Route::get('/orders', [OrderController::class, 'index']);
     Route::post('/orders', [OrderController::class, 'store']);
     Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel']);
