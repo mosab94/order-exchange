@@ -38,7 +38,7 @@ A high-performance real-time order matching engine built with Laravel 12, Inerti
    PUSHER_APP_ID=your-id
    PUSHER_APP_KEY=your-key
    PUSHER_APP_SECRET=your-secret
-   PUSHER_APP_CLUSTER=mt1
+   PUSHER_APP_CLUSTER=your-cluster
    ```
 
 ## Database Migration & Seeding
@@ -56,8 +56,8 @@ The `TestDataSeeder` creates two accounts for testing real-time matching:
 
 | Email | Password | Initial Balance | Assets |
 |-------|----------|-----------------|--------|
-| **test1@example.com** | `1234` | $100,000.00 | 10 BTC, 100 ETH |
-| **test2@example.com** | `1234` | $100,000.00 | 10 BTC, 100 ETH |
+| **u1@example.com** | `1234` | $100,000.00 | 10 BTC, 100 ETH |
+| **u2@example.com** | `1234` | $100,000.00 | 10 BTC, 100 ETH |
 
 ## Running the Application
 
