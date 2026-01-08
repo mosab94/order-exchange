@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             SideSeeder::class,
             StatusSeeder::class,
             SymbolSeeder::class,
+            TestDataSeeder::class,
         ]);
     }
 }
